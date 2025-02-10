@@ -11,7 +11,7 @@ const PORT = 3000;
 app.use(morgan('combined'));
 
 // 檢查並返回緩存的響應
-// app.use('/', checkCache);
+app.use('/', checkCache);
 
 // 使用 reverse proxy middleware
 app.use('/', reverse_proxy);

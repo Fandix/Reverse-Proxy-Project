@@ -25,7 +25,7 @@ function getNextServer() {
 }
 
 function healthCheck() {
-  apiServers.forEach(async (server, index) => {
+  apiServers.forEach(async (server) => {
     try {
       res = await axios.get(`${server.url}`);
       server.alive = res.status === 200;
@@ -36,6 +36,7 @@ function healthCheck() {
   });
 }
 
+// 每兩秒檢查一次 web server 是否正常運作
 setInterval(healthCheck, 2000);
 
 function reverse_proxy(req, res) {
@@ -58,21 +59,19 @@ function reverse_proxy(req, res) {
         const completeBuffer = Buffer.concat(dataBuffer);
         let contentType = proxyRes.headers['content-type'];
 
-        // 如果沒有 content-type，動態推斷
+        // 如果沒有 content-type，用 mime 判斷
         if (!contentType) {
           contentType = mime.getType(req.url) || 'application/octet-stream';
         }
 
-        // 緩存響應
+        // 把 response 存到 cache 中
         await cache.set(cacheKey, { data: completeBuffer, contentType });
 
-        // 設置標頭
         res.setHeader('Content-Type', contentType);
         if (contentType === 'text/html') {
           res.setHeader('Content-Disposition', 'inline');
         }
 
-        // 發送響應
         res.end(completeBuffer);
       });
     },
